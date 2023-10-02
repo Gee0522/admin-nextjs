@@ -1,0 +1,6 @@
+{
+  "WillLuke.nextjs.addTypesOnSave": true,
+  "WillLuke.nextjs.hasPrompted": true,
+  "prettier.enableDebugLogs": true,
+  "git.enabled": true
+}
