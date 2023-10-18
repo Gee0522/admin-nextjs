@@ -3,42 +3,37 @@ import prismadb from "@/lib/prismadb";
 import { auth } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 
-
-export default async function DashboardLayout ({
-    children,
-    params
+export default async function DashboardLayout({
+  children,
+  params,
 }: {
-    children: React.ReactNode;
-    params: { storeId: string }
-}) 
-{
-    
-    const { userId } = auth();
-    
-    // checking if there is userId
-    if(!userId){
-        redirect('/sign-in');
-    }
+  children: React.ReactNode;
+  params: { storeId: string };
+}) {
+  const { userId } = auth();
 
-    // load the store using the Id from the root folder
-    const store = await prismadb.store.findFirst({
-        where: {
-            id: params.storeId,
-            userId
-        }
-    });
+  // checking if there is userId
+  if (!userId) {
+    redirect("/sign-in");
+  }
 
-    if(!store){
-        // if store does not exist
-        redirect('/')
-    }
+  // load the store using the Id from the root folder
+  const store = await prismadb.store.findFirst({
+    where: {
+      id: params.storeId,
+      userId,
+    },
+  });
 
-    return (
-        <>
-            <Navbar /> 
+  if (!store) {
+    // if store does not exist
+    redirect("/");
+  }
 
-            {children}   {/* from routes/ page.tsx */}
-        </>
-    );
-
+  return (
+    <>
+      <Navbar />
+      {children} {/* from routes/ page.tsx */}
+    </>
+  );
 }
