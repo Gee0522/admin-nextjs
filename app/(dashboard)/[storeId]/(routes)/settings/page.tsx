@@ -5,41 +5,37 @@ import React from "react";
 import { SettingsForm } from "./components/settings-form";
 
 interface SettingsPageProps {
-    params:{
-        storeId: string;
-    }
+  params: {
+    storeId: string;
+  };
 }
 
+const SettingsPage: React.FC<SettingsPageProps> = async ({ params }) => {
+  const { userId } = auth();
 
-const SettingsPage: React.FC<SettingsPageProps> = async ({
-    params
-}) => {
+  if (!userId) {
+    redirect("/sign-in");
+  }
 
-    const { userId } = auth();
+  const store = await prismadb.store.findFirst({
+    where: {
+      id: params.storeId,
+      userId,
+    },
+  });
 
-    if(!userId) {
-        redirect("/sign-in")
-    }
+  // to correct the navigation id
+  if (!store) {
+    redirect("/");
+  }
 
-    const store = await prismadb.store.findFirst({
-        where:{
-            id: params.storeId,
-            userId
-        }
-    });
-
-    // to correct the navigation id
-    if(!store) {
-        redirect("/")
-    }
-
-    return (
-        <div className="flex-col">
-            <div className="flex-1 space-y-4 p-8 pt-6">
-                <SettingsForm initialData={store}/>
-            </div>
-        </div>
-    )
-}
+  return (
+    <div className="flex-col">
+      <div className="flex-1 space-y-4 p-8 pt-6">
+        <SettingsForm initialData={store} />
+      </div>
+    </div>
+  );
+};
 
 export default SettingsPage;

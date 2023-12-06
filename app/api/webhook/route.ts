@@ -15,9 +15,10 @@ export async function POST(req: Request) {
     event = stripe.webhooks.constructEvent(
       body,
       signature,
-      process.env.STRIPE_WEBHOOK_SECRETE!
+      process.env.STRIPE_WEBHOOK_SECRETE! || "fallback-secret-key"
     );
   } catch (error: any) {
+    console.error("Webhook Error:", error.stack);
     return new NextResponse(`Webhook Error: ${error.message}`, { status: 400 });
   }
 
@@ -52,16 +53,61 @@ export async function POST(req: Request) {
 
     const productIds = order.orderItems.map((orderItem) => orderItem.productId);
 
-    await prismadb.product.updateMany({
-      where: {
-        id: {
-          in: [...productIds],
+    for (const productId of productIds) {
+      const product = await prismadb.product.findUnique({
+        where: { id: productId },
+      });
+
+      await prismadb.product.updateMany({
+        where: {
+          id: { in: [...productIds] },
         },
+        data: {
+          isArchived: product?.quantity === 0 ? true : false,
+        },
+      });
+    }
+
+    //
+    if (order.isPaid === false) {
+      const productIds = order.orderItems.map(
+        (orderItem) => orderItem.productId
+      );
+
+      for (const productId of productIds) {
+        const product = await prismadb.product.findUnique({
+          where: { id: productId },
+        });
+
+        await prismadb.product.updateMany({
+          where: {
+            id: { in: [...productIds] },
+          },
+          data: {
+            isArchived: false,
+            quantity: {
+              decrement: 0,
+            },
+          },
+        });
+      }
+    }
+  } else if (event.type === "payment_intent.canceled") {
+    const order = await prismadb.order.update({
+      where: {
+        id: session?.metadata?.orderId,
       },
       data: {
-        isArchived: true,
+        isPaid: false,
+        address: addressString,
+        phone: session?.customer_details?.phone || "",
+      },
+      include: {
+        orderItems: false,
       },
     });
+
+    return order;
   }
 
   return new NextResponse(null, { status: 200 });

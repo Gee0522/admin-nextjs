@@ -28,15 +28,15 @@ const Dashboardpage: React.FC<DashboardPageProps> = async ({ params }) => {
   return (
     <div className="flex-col">
       <div className="flex-1 space-y-4 p-8 pt-6">
-        <Heading title={"DashBoard"} description={"Store over view"} />
+        <Heading title={"Sales"} description={"Sales over view"} />
         <Separator />
         <div className="grid gap-4 grid-cols-3">
-          <Card>
+          <Card className=" border-green-600">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Revenue :
+              <CardTitle className="text-md font-medium">
+                Total Revenue
               </CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <DollarSign className="h-7 w-7 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
@@ -44,10 +44,13 @@ const Dashboardpage: React.FC<DashboardPageProps> = async ({ params }) => {
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border-green-600">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium"> Sales : </CardTitle>
-              <CreditCardIcon className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-md font-medium">
+                {" "}
+                Total Sales{" "}
+              </CardTitle>
+              <CreditCardIcon className="h-7 w-7 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
@@ -58,13 +61,13 @@ const Dashboardpage: React.FC<DashboardPageProps> = async ({ params }) => {
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border border-red-500">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="text-md font-medium">
                 {" "}
                 Products in Stock :{" "}
               </CardTitle>
-              <Package className="h-4 w-4 text-muted-foreground" />
+              <Package className="h-7 w-7 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold"> {stockCount} </div>
@@ -73,7 +76,7 @@ const Dashboardpage: React.FC<DashboardPageProps> = async ({ params }) => {
         </div>
         <Card className="col-span-4">
           <CardHeader>
-            <CardTitle> Overview </CardTitle>
+            <CardTitle className="text-center"> Chart Overview </CardTitle>
           </CardHeader>
           <CardContent className="pl-2">
             <Overview data={graphrevenue} />

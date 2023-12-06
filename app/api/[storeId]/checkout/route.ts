@@ -4,11 +4,20 @@ import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import prismadb from "@/lib/prismadb";
 
+import { z } from "zod";
+import toast from "react-hot-toast";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": " GET, POST, PUT, DELETE, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
+
+const orderItemSchema = z.object({
+  id: z.string(), // Update with the actual type of your id
+  productId: z.string(),
+  orderQuantity: z.number(),
+});
 
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
@@ -20,23 +29,28 @@ export async function POST(
 ) {
   const { productIds } = await req.json();
 
-  if (!productIds || productIds.length === 0) {
-    return new NextResponse("Product ids are required", { status: 400 });
-  }
+  const productArr = productIds.map((product: any) => product.id);
 
   const products = await prismadb.product.findMany({
     where: {
       id: {
-        in: productIds,
+        in: productArr,
       },
     },
   });
 
+  if (!productIds || productIds.length === 0) {
+    return new NextResponse("Product ids are required", { status: 400 });
+  }
+
   const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
 
   products.forEach((product) => {
+    const cartItem = productIds.find(
+      (orderItem: any) => product.id === orderItem.id
+    );
     line_items.push({
-      quantity: 1,
+      quantity: cartItem.quantity,
       price_data: {
         currency: "USD",
         product_data: {
@@ -52,14 +66,20 @@ export async function POST(
       storeId: params.storeId,
       isPaid: false,
       orderItems: {
-        create: productIds.map((productId: string) => ({
-          product: {
-            connect: {
-              id: productId,
-            },
-          },
-        })),
+        create: productIds.map((item: any) => {
+          const cartItem = productIds.find(
+            (orderItem: any) => item.id === orderItem.id
+          );
+
+          return {
+            productId: item.id,
+            orderQuantity: cartItem.quantity,
+          };
+        }),
       },
+    },
+    include: {
+      orderItems: true,
     },
   });
 
@@ -76,6 +96,21 @@ export async function POST(
       orderId: order.id,
     },
   });
+
+  // Update product quantities based on the order
+  for (const orderItem of order.orderItems) {
+    const product = orderItem.productId;
+    await prismadb.product.updateMany({
+      where: {
+        id: product,
+      },
+      data: {
+        quantity: {
+          decrement: orderItem.orderQuantity,
+        },
+      },
+    });
+  }
 
   return NextResponse.json(
     { url: session.url },

@@ -1,6 +1,5 @@
 import prismadb from "@/lib/prismadb";
 import { auth } from "@clerk/nextjs";
-import { tr } from "date-fns/locale";
 import { NextResponse } from "next/server";
 
 // this route is to target individual product
@@ -48,6 +47,7 @@ export async function PATCH(
     const {
       name,
       price,
+      quantity,
       categoryId,
       colorId,
       sizeId,
@@ -65,6 +65,9 @@ export async function PATCH(
     }
     if (!price) {
       return new NextResponse("Price is required", { status: 400 });
+    }
+    if (!quantity) {
+      return new NextResponse("Quantity is required", { status: 400 });
     }
     if (!categoryId) {
       return new NextResponse("Category id is required", { status: 400 });
@@ -102,6 +105,7 @@ export async function PATCH(
       data: {
         name,
         price,
+        quantity,
         categoryId,
         colorId,
         sizeId,
