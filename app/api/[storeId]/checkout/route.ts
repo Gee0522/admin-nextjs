@@ -1,9 +1,7 @@
 import Stripe from "stripe";
 import { NextResponse } from "next/server";
-
 import { stripe } from "@/lib/stripe";
 import prismadb from "@/lib/prismadb";
-
 import { z } from "zod";
 import toast from "react-hot-toast";
 
@@ -12,12 +10,6 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": " GET, POST, PUT, DELETE, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
-
-const orderItemSchema = z.object({
-  id: z.string(), // Update with the actual type of your id
-  productId: z.string(),
-  orderQuantity: z.number(),
-});
 
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
@@ -60,6 +52,8 @@ export async function POST(
       },
     });
   });
+
+  // const userId = req.userId;
 
   const order = await prismadb.order.create({
     data: {

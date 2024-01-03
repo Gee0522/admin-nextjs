@@ -2,7 +2,7 @@ import prismadb from "@/lib/prismadb";
 import { auth } from "@clerk/nextjs";
 import { NextResponse } from "next/server";
 
-// API for creating a Billboard
+// API for creating a Product
 export async function POST(
   req: Request,
   { params }: { params: { storeId: string } }

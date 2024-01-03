@@ -79,6 +79,34 @@ model Color {
   @@index([storeId])
 }
 
+
+model User {
+  id            String @id @default(uuid())
+  name          String
+  email         String @unique 
+  password      String
+  reviews       Review[]
+  // order         Order[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+}
+
+model Review {
+  id            String @id @default(uuid())
+  rating        Int
+  comment       String
+  productId     String
+  product       Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([productId])
+  @@index([userId])
+}
+
 model Product {
   id          String @id @default(uuid())
   storeId     String
@@ -96,6 +124,7 @@ model Product {
   color       Color @relation(fields: [colorId], references: [id])
   images      Image[]
   orderItems  OrderItem[]
+  reviews     Review[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -103,6 +132,7 @@ model Product {
   @@index([categoryId])
   @@index([sizeId])
   @@index([colorId])
+  
 }
 
 model Image {
@@ -124,11 +154,15 @@ model Order {
   isPaid        Boolean @default(false)
   phone         String @default("")
   address       String @default("")
+  // email         String @default("")
+  // userId        String
+  // user          User @relation(fields: [userId], references: [id], onDelete: Cascade)
   creadtedAt    DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
 
   @@index([storeId])
+  // @@index([userId])
 
 }
 
